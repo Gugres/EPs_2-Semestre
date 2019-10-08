@@ -76,7 +76,6 @@ def main():
     # Colocar o prompt
     # Solicita uma nova expressão do tipo:
     expressao = str(input(">>> "))
-    novaPilha = Pilha()
     if expressao == "0": return
     print (expressao)
 
@@ -85,20 +84,82 @@ def main():
     # Transforma em uma lista
     novaExpressao = novaExpressao.split()
     print (novaExpressao)
+    # Verifica a lista, para ver se a expressao esta escrita corretamente
+    # Verifica se os parentesis estão em pares e se os operadores estão entre numeros
+    novaExpressao = Verificacao(novaExpressao)
+    if novaExpressao == None:
+      continue
 
     # Traduzir a notação para pós-fixas
+    expressaoPosFixa = TraduzPosFixa(novaExpressao)
+    print(expressaoPosFixa)
+
+    # Cria um dicionario para armazenar variaveis
+    variaveis = {}
 
     # Calcular o valor da expressão usando a notação pós-fixas
     # Se o final for "=" atribuição, armazenar o valor. Caso contrario, print
 
+def Verificacao(param):
+  try:
+    # Cria uma pilha para verificar os parentesis
+    pilhaVerificacao = Pilha()
+    for i in range (len(param)):
+      if param[i] == "(":
+        pilhaVerificacao.push(param[i])
+        continue
+      if param[i] == ")":
+        pilhaVerificacao.pop()
+      if Operadores(param[i]) != None:
+        if Operadores(param[i+1]) != None:
+          raise ("Error")
+    if len(pilhaVerificacao) != 0:
+      raise ("Error")
+    # Se a expressao esta consistente, retorna o proprio parametro
+    return param
+  except:
+    print ("Expressão inconsistente nos parentesis, ou ordem de operadores incorreta")
+    # Se inconsistente, retorna None
+    return None
+
 def Operadores(param):
   '''Verifica qual o operador'''
-  operadores = ["=", "+", "-", "*", "/", "**", "(", ")"]
+  operadores = ["=", "+", "-", "*", "/", "**", "#", "_" "(", ")"]
   if param in operadores:
       for i in range(len(operadores)):
           if param == operadores[i]:
               return i
   return None
+
+def ConverteOperador(param):
+  '''Converte os operadores unarios de + e -'''
+  if Operadores(param) == 1:
+    return "#"
+  if Operadores(param) == 2:
+    return "_"
+
+def OrganizaPrioridade(param, pilha, expressao):
+  '''Organiza os operadores na pilha e na expressao, de acordo com suas prioridades'''
+  if 1 <= Operadores(param) <= 2:
+    while pilha.top != None or (1 <= Operadores(pilha.top) <= 2) or Operadores(pilha.top) > Operadores(param):
+      expressao.append(pilha.pop())
+      if Operadores(pilha.top) == 8:
+        break
+    pilha.push(param)
+  if 3 <= Operadores(param) <= 4:
+    while pilha.top != None or (3 <= Operadores(pilha.top) <= 4) or Operadores(pilha.top) > Operadores(param):
+      expressao.append(pilha.pop())
+      if Operadores(pilha.top) == 8:
+        break
+    pilha.push(param)
+  if 6 <= Operadores(param) <= 7:
+    while pilha.top != None or (6 <= Operadores(pilha.top) <= 7) or Operadores(pilha.top) > Operadores(param):
+      expressao.append(pilha.pop())
+      if Operadores(pilha.top) == 8:
+        break
+    pilha.push(param)
+
+  return (pilha, expressao)
 
 def NovaExpressao(param):
   '''Separa os operandos dos operadores na string, independentemente de terem
@@ -123,7 +184,28 @@ def TraduzPosFixa(param):
   '''Recebe uma string "param" com ou sem atribuição "="
   e devolve uma lista contendo essa expressão em notação pós-fixas.
   Devolve True se foi realizado com sucesso, ou False caso contrário'''
-  pass
+  expressaoPosFixa = []
+  # Cria uma pilha para montar a expressao Pos-Fixa
+  pilhaPosFixa = Pilha()
+  for k in range (len(param)):
+    # Se operando, adiciona na lista expressaoPosFixa
+    if Operadores(param[k]) == None: expressaoPosFixa.append(param[k])
+    # Se operador, tratamos quando é abre parentesis, operador comum, ou fecha parentesis
+    if Operadores(param[k]) != None:
+      if Operadores(param[k]) == 8: pilhaPosFixa.push(param[k])
+      if 1 <= Operadores(param[k]) < 6:
+        if 1 <= Operadores(param[k]) <= 2:
+          # Caso seja + ou - unarios, converte em "+" -> "#" e "-" -> "_"
+          if Operadores(param[k-1]) != None:
+            param[k] = ConverteOperador(param[k])
+        pilhaPosFixa, expressaoPosFixa = OrganizaPrioridade(param[k], pilhaPosFixa, expressaoPosFixa)
+      if Operadores(param[k]) == 9:
+        while pilhaPosFixa.top != None or Operadores(pilhaPosFixa.top) != 8:
+          expressaoPosFixa.append(pilhaPosFixa.pop())
+        expressaoPosFixa.append(pilhaPosFixa.pop())
+  while pilhaPosFixa.top != None:
+    expressaoPosFixa.append(pilhaPosFixa.pop())
+  return expressaoPosFixa
 
 def CalcPosFixa():
   '''Recebe uma lista de valores contendo uma expressão em notação pós-fixa e
