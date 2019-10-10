@@ -13,8 +13,7 @@ class Empty (Exception):
   pass
 
 class _Node:
-  '''classe _Node - interna'''
-
+  '''classe _Node'''
   __slots__ = '_info', '_prox'
 
   def __init__(self, info, prox):
@@ -24,7 +23,6 @@ class _Node:
 
 class Pilha:
   ''' implementa uma pilha usando uma Lista Ligada simples. '''
-
   __slots__ = '_topo', '_tamanho'
 
   def __init__(self):
@@ -49,14 +47,14 @@ class Pilha:
     ''' retorna sem remover o topo da pilha.
     sinaliza exceção se pilha vazia.'''
     if self.is_empty():
-        raise Empty("Pilha Vazia")
+        return None
     return self._topo._info  # topo da pilha
 
   def pop(self):
     ''' remove e retorna o topo da pilha.
     sinaliza exceção se pilha vazia.'''
     if self.is_empty():
-        raise Empty("Pilha Vazia")
+        raise Empty("Pilha vazia")
     val_topo = self._topo._info
     self._topo = self._topo._prox  # pula o primeiro elemento
     self._tamanho -= 1
@@ -64,14 +62,12 @@ class Pilha:
 
   def Imprime(self):
     p = self._topo
-    print("Imprimindo a pilha")
     while p is not None:
         print(p._info)
         p = p._prox
 
 def main():
   '''Função principal'''
-
   while True:
     # Colocar o prompt
     # Solicita uma nova expressão do tipo:
@@ -86,45 +82,51 @@ def main():
     print (novaExpressao)
     # Verifica a lista, para ver se a expressao esta escrita corretamente
     # Verifica se os parentesis estão em pares e se os operadores estão entre numeros
-    novaExpressao = Verificacao(novaExpressao)
-    if novaExpressao == None:
-      continue
+    # novaExpressao = Verificacao(novaExpressao)
+    # if novaExpressao == None:
+    #   continue
 
     # Traduzir a notação para pós-fixas
     expressaoPosFixa = TraduzPosFixa(novaExpressao)
     print(expressaoPosFixa)
+    if expressaoPosFixa == False:
+      print ("Erro na tradução da expressão para a Pós Fixa")
 
     # Cria um dicionario para armazenar variaveis
     variaveis = {}
+    if expressaoPosFixa[-1] == "=":
+      variaveis[str(expressaoPosFixa[0])] = 0
 
     # Calcular o valor da expressão usando a notação pós-fixas
     # Se o final for "=" atribuição, armazenar o valor. Caso contrario, print
 
-def Verificacao(param):
-  try:
-    # Cria uma pilha para verificar os parentesis
-    pilhaVerificacao = Pilha()
-    for i in range (len(param)):
-      if param[i] == "(":
-        pilhaVerificacao.push(param[i])
-        continue
-      if param[i] == ")":
-        pilhaVerificacao.pop()
-      if Operadores(param[i]) != None:
-        if Operadores(param[i+1]) != None:
-          raise ("Error")
-    if len(pilhaVerificacao) != 0:
-      raise ("Error")
-    # Se a expressao esta consistente, retorna o proprio parametro
-    return param
-  except:
-    print ("Expressão inconsistente nos parentesis, ou ordem de operadores incorreta")
-    # Se inconsistente, retorna None
-    return None
+# def Verificacao(param):
+#   try:
+#     # Cria uma pilha para verificar os parentesis
+#     pilhaVerificacao = Pilha()
+#     for i in range (len(param)):
+#       if param[i] == "(":
+#         pilhaVerificacao.push(param[i])
+#         continue
+#       if param[i] == ")":
+#         pilhaVerificacao.pop()
+#         continue
+#       if Operadores(param[i]) != None:
+#         if Operadores(param[i+1]) != None:
+#           if Operadores(param[i+1]) != 8 and Operadores(param[i+1]) != 9:
+#             raise ("Error")
+#     if len(pilhaVerificacao) != 0:
+#       raise ("Error")
+#     # Se a expressao esta consistente, retorna o proprio parametro
+#     return param
+#   except:
+#     print ("Expressão inconsistente nos parentesis, ou ordem de operadores incorreta")
+#     # Se inconsistente, retorna None
+#     return None
 
 def Operadores(param):
   '''Verifica qual o operador'''
-  operadores = ["=", "+", "-", "*", "/", "**", "#", "_" "(", ")"]
+  operadores = ["=", "+", "-", "*", "/", "**", "(", ")"]
   if param in operadores:
       for i in range(len(operadores)):
           if param == operadores[i]:
@@ -140,25 +142,50 @@ def ConverteOperador(param):
 
 def OrganizaPrioridade(param, pilha, expressao):
   '''Organiza os operadores na pilha e na expressao, de acordo com suas prioridades'''
+  if param == "#" or param == "_":
+    pilha.push(param)
+    return (pilha, expressao)
   if 1 <= Operadores(param) <= 2:
-    while pilha.top != None or (1 <= Operadores(pilha.top) <= 2) or Operadores(pilha.top) > Operadores(param):
-      expressao.append(pilha.pop())
-      if Operadores(pilha.top) == 8:
+    while pilha.top() != None:
+      if Operadores(pilha.top()) == 6:
         break
+      if pilha.top() == "#" or pilha.top() =="_":
+        expressao.append(pilha.pop())
+        continue
+      if 1 <= Operadores(pilha.top()) <= 2 or Operadores(pilha.top()) > Operadores(param):
+        expressao.append(pilha.pop())
+      break
     pilha.push(param)
   if 3 <= Operadores(param) <= 4:
-    while pilha.top != None or (3 <= Operadores(pilha.top) <= 4) or Operadores(pilha.top) > Operadores(param):
-      expressao.append(pilha.pop())
-      if Operadores(pilha.top) == 8:
+    while pilha.top() != None:
+      if Operadores(pilha.top()) == 6:
         break
+      if pilha.top() == "#" or pilha.top() =="_":
+        expressao.append(pilha.pop())
+        continue
+      if 3 <= Operadores(pilha.top()) <= 4 or Operadores(pilha.top()) > Operadores(param):
+        expressao.append(pilha.pop())
+      break
     pilha.push(param)
-  if 6 <= Operadores(param) <= 7:
-    while pilha.top != None or (6 <= Operadores(pilha.top) <= 7) or Operadores(pilha.top) > Operadores(param):
-      expressao.append(pilha.pop())
-      if Operadores(pilha.top) == 8:
+  if param == "**":
+    while pilha.top() != None:
+      if Operadores(pilha.top()) == 6:
         break
+      if pilha.top() == "#" or pilha.top() == "_":
+        expressao.append(pilha.pop())
+      break
     pilha.push(param)
-
+  if param == "=":
+    while pilha.top() != None:
+      if Operadores(pilha.top()) == 6:
+        break
+      if pilha.top() == "#" or pilha.top() =="_":
+        expressao.append(pilha.pop())
+        continue
+      if Operadores(pilha.top()) >= Operadores(param):
+        expressao.append(pilha.pop())
+      break
+    pilha.push(param)
   return (pilha, expressao)
 
 def NovaExpressao(param):
@@ -187,25 +214,33 @@ def TraduzPosFixa(param):
   expressaoPosFixa = []
   # Cria uma pilha para montar a expressao Pos-Fixa
   pilhaPosFixa = Pilha()
-  for k in range (len(param)):
-    # Se operando, adiciona na lista expressaoPosFixa
-    if Operadores(param[k]) == None: expressaoPosFixa.append(param[k])
-    # Se operador, tratamos quando é abre parentesis, operador comum, ou fecha parentesis
-    if Operadores(param[k]) != None:
-      if Operadores(param[k]) == 8: pilhaPosFixa.push(param[k])
-      if 1 <= Operadores(param[k]) < 6:
-        if 1 <= Operadores(param[k]) <= 2:
-          # Caso seja + ou - unarios, converte em "+" -> "#" e "-" -> "_"
-          if Operadores(param[k-1]) != None:
-            param[k] = ConverteOperador(param[k])
-        pilhaPosFixa, expressaoPosFixa = OrganizaPrioridade(param[k], pilhaPosFixa, expressaoPosFixa)
-      if Operadores(param[k]) == 9:
-        while pilhaPosFixa.top != None or Operadores(pilhaPosFixa.top) != 8:
-          expressaoPosFixa.append(pilhaPosFixa.pop())
-        expressaoPosFixa.append(pilhaPosFixa.pop())
-  while pilhaPosFixa.top != None:
-    expressaoPosFixa.append(pilhaPosFixa.pop())
-  return expressaoPosFixa
+  try:
+    for k in range (len(param)):
+      # Se operando, adiciona na lista expressaoPosFixa
+      if Operadores(param[k]) == None: expressaoPosFixa.append(param[k])
+      # Se operador, tratamos quando é abre parentesis, operador comum, ou fecha parentesis
+      if Operadores(param[k]) != None:
+        if Operadores(param[k]) == 6:
+          pilhaPosFixa.push(param[k])
+        if 0 <= Operadores(param[k]) <= 5:
+          if 1 <= Operadores(param[k]) <= 2:
+            # Caso seja + ou - unarios, converte em "+" -> "#" e "-" -> "_"
+            if (Operadores(param[k-1]) != None):
+              if Operadores(param[k-1]) != 7:
+                param[k] = ConverteOperador(param[k])
+          if pilhaPosFixa.top() != None:
+            pilhaPosFixa, expressaoPosFixa = OrganizaPrioridade(param[k], pilhaPosFixa, expressaoPosFixa)
+            continue
+          pilhaPosFixa.push(param[k])
+        if Operadores(param[k]) == 7:
+          while pilhaPosFixa.top() != None and Operadores(pilhaPosFixa.top()) != 6:
+            expressaoPosFixa.append(pilhaPosFixa.pop())
+          pilhaPosFixa.pop()
+    while pilhaPosFixa.top() != None:
+      expressaoPosFixa.append(pilhaPosFixa.pop())
+    return expressaoPosFixa
+  except:
+    return False
 
 def CalcPosFixa():
   '''Recebe uma lista de valores contendo uma expressão em notação pós-fixa e
