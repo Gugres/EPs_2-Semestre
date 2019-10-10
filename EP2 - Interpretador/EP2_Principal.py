@@ -73,13 +73,12 @@ def main():
     # Solicita uma nova expressão do tipo:
     expressao = str(input(">>> "))
     if expressao == "0": return
-    print (expressao)
 
     # Cria uma nova param, separando operadores de operandos
     novaExpressao = NovaExpressao(expressao)
     # Transforma em uma lista
     novaExpressao = novaExpressao.split()
-    print (novaExpressao)
+
     # Verifica a lista, para ver se a expressao esta escrita corretamente
     # Verifica se os parentesis estão em pares e se os operadores estão entre numeros
     # novaExpressao = Verificacao(novaExpressao)
@@ -88,17 +87,18 @@ def main():
 
     # Traduzir a notação para pós-fixas
     expressaoPosFixa = TraduzPosFixa(novaExpressao)
-    print(expressaoPosFixa)
     if expressaoPosFixa == False:
       print ("Erro na tradução da expressão para a Pós Fixa")
+    print(expressaoPosFixa)
 
     # Cria um dicionario para armazenar variaveis
     variaveis = {}
-    if expressaoPosFixa[-1] == "=":
-      variaveis[str(expressaoPosFixa[0])] = 0
 
     # Calcular o valor da expressão usando a notação pós-fixas
     # Se o final for "=" atribuição, armazenar o valor. Caso contrario, print
+    resultadoFinal, variaveis = CalcPosFixa(expressaoPosFixa, variaveis)
+    print (resultadoFinal)
+    print (variaveis)
 
 # def Verificacao(param):
 #   try:
@@ -188,6 +188,20 @@ def OrganizaPrioridade(param, pilha, expressao):
     pilha.push(param)
   return (pilha, expressao)
 
+def CalculaOperadoresBinarios(operador, elemento1, elemento2):
+  if Operadores(operador) == 0:
+    return elemento1
+  if Operadores(operador) == 1:
+    return (elemento1 + elemento2)
+  if Operadores(operador) == 2:
+    return (elemento2 - elemento1)
+  if Operadores(operador) == 3:
+    return (elemento1 * elemento2)
+  if Operadores(operador) == 4:
+    return (elemento2 / elemento1)
+  if Operadores(operador) == 5:
+    return (elemento2 ** elemento1)
+
 def NovaExpressao(param):
   '''Separa os operandos dos operadores na string, independentemente de terem
   espaços entre eles ou não'''
@@ -242,10 +256,32 @@ def TraduzPosFixa(param):
   except:
     return False
 
-def CalcPosFixa():
+def CalcPosFixa(param1, param2):
   '''Recebe uma lista de valores contendo uma expressão em notação pós-fixa e
   calcula o seu valor. Devolve esse valor se o calculo foi feito com sucesso,
   ou False caso contrário'''
-  pass
+  pilhaCalcPosFixa = Pilha()
+  for k in range (len(param1)):
+    if Operadores(param1[k]) == None: pilhaCalcPosFixa.push(param1[k])
+    if param1[k] == "#" or param1[k] == "_":
+      topoDaPilha = float(pilhaCalcPosFixa.pop())
+      if param1[k] == "#":
+        topoDaPilha = 0 + topoDaPilha
+      if param1[k] == "_":
+        topoDaPilha = 0 - topoDaPilha
+      pilhaCalcPosFixa.push(topoDaPilha)
+    if param1[k] == "=" and (len(param1) - 1) == k:
+      elemento1 = float(pilhaCalcPosFixa.pop())
+      elemento2 = pilhaCalcPosFixa.pop()
+      param2[str(elemento2)] = elemento1
+      topoDaPilha = CalculaOperadoresBinarios(param1[k], elemento1, elemento2)
+      pilhaCalcPosFixa.push(topoDaPilha)
+      continue
+    if Operadores(param1[k]) != None:
+      elemento1 = float(pilhaCalcPosFixa.pop())
+      elemento2 = float(pilhaCalcPosFixa.pop())
+      topoDaPilha = CalculaOperadoresBinarios(param1[k], elemento1, elemento2)
+      pilhaCalcPosFixa.push(topoDaPilha)
+  return (pilhaCalcPosFixa.pop(), param2)
 
 main()
