@@ -1,3 +1,5 @@
+import sys
+
 '''Desafio - Construir um Shell Mode do Python, utilizando um ADT de uma pilha e notação polonesa'''
 
 # As expressões podem conter:
@@ -68,11 +70,24 @@ class Pilha:
 
 def main():
   '''Função principal'''
+
+  # Mensagem inicial
+  versaoDoSistema = sys.version
+  print ("Python" + versaoDoSistema)
+  print ("Type 'license' for more information, or 'exit()' to exit.")
+
+  # Cria duas listas para armazenar variaveis
+  variaveisNomes = []
+  variaveisValores = []
   while True:
     # Colocar o prompt
     # Solicita uma nova expressão do tipo:
     expressao = str(input(">>> "))
-    if expressao == "0": return
+    if expressao == 'license':
+      print ("Produzido por: Gustavo Giro Resende")
+      continue
+    if expressao == 'exit()':
+      return
 
     # Cria uma nova param, separando operadores de operandos
     novaExpressao = NovaExpressao(expressao)
@@ -85,20 +100,28 @@ def main():
     # if novaExpressao == None:
     #   continue
 
+    # Verifica se alguma das variaveis ja foi calculada antes
+    # Se sim, troca esse valor pela variavel na lista da novaExpressao
+    for i in range(len(novaExpressao)):
+      if novaExpressao[i] in variaveisNomes:
+        localizacao = 0
+        for k in range (len(variaveisNomes)):
+          if variaveisNomes[k] == novaExpressao[i]: localizacao = k
+        novaExpressao[i] = variaveisValores[localizacao]
+
     # Traduzir a notação para pós-fixas
     expressaoPosFixa = TraduzPosFixa(novaExpressao)
     if expressaoPosFixa == False:
       print ("Erro na tradução da expressão para a Pós Fixa")
-    print(expressaoPosFixa)
 
-    # Cria um dicionario para armazenar variaveis
-    variaveis = {}
+    # Salva o len atual da variavel
+    tamanhoAtual = len(variaveisNomes)
 
     # Calcular o valor da expressão usando a notação pós-fixas
     # Se o final for "=" atribuição, armazenar o valor. Caso contrario, print
-    resultadoFinal, variaveis = CalcPosFixa(expressaoPosFixa, variaveis)
-    print (resultadoFinal)
-    print (variaveis)
+    resultadoFinal, variaveisNomes, variaveisValores = CalcPosFixa(expressaoPosFixa, variaveisNomes, variaveisValores)
+    if len(variaveisNomes) == tamanhoAtual:
+      print(resultadoFinal)
 
 # def Verificacao(param):
 #   try:
@@ -256,32 +279,34 @@ def TraduzPosFixa(param):
   except:
     return False
 
-def CalcPosFixa(param1, param2):
+def CalcPosFixa(expressaoPosFixa, variaveisNomes, variaveisValores):
   '''Recebe uma lista de valores contendo uma expressão em notação pós-fixa e
   calcula o seu valor. Devolve esse valor se o calculo foi feito com sucesso,
   ou False caso contrário'''
   pilhaCalcPosFixa = Pilha()
-  for k in range (len(param1)):
-    if Operadores(param1[k]) == None: pilhaCalcPosFixa.push(param1[k])
-    if param1[k] == "#" or param1[k] == "_":
+  for k in range (len(expressaoPosFixa)):
+    if Operadores(expressaoPosFixa[k]) == None:
+      if expressaoPosFixa[k] != "#" and expressaoPosFixa[k] != "_": pilhaCalcPosFixa.push(expressaoPosFixa[k])
+    if expressaoPosFixa[k] == "#" or expressaoPosFixa[k] == "_":
       topoDaPilha = float(pilhaCalcPosFixa.pop())
-      if param1[k] == "#":
+      if expressaoPosFixa[k] == "#":
         topoDaPilha = 0 + topoDaPilha
-      if param1[k] == "_":
+      if expressaoPosFixa[k] == "_":
         topoDaPilha = 0 - topoDaPilha
       pilhaCalcPosFixa.push(topoDaPilha)
-    if param1[k] == "=" and (len(param1) - 1) == k:
+    if expressaoPosFixa[k] == "=" and (len(expressaoPosFixa) - 1) == k:
       elemento1 = float(pilhaCalcPosFixa.pop())
       elemento2 = pilhaCalcPosFixa.pop()
-      param2[str(elemento2)] = elemento1
-      topoDaPilha = CalculaOperadoresBinarios(param1[k], elemento1, elemento2)
+      variaveisNomes.append(elemento2)
+      variaveisValores.append(elemento1)
+      topoDaPilha = CalculaOperadoresBinarios(expressaoPosFixa[k], elemento1, elemento2)
       pilhaCalcPosFixa.push(topoDaPilha)
       continue
-    if Operadores(param1[k]) != None:
+    if Operadores(expressaoPosFixa[k]) != None:
       elemento1 = float(pilhaCalcPosFixa.pop())
       elemento2 = float(pilhaCalcPosFixa.pop())
-      topoDaPilha = CalculaOperadoresBinarios(param1[k], elemento1, elemento2)
+      topoDaPilha = CalculaOperadoresBinarios(expressaoPosFixa[k], elemento1, elemento2)
       pilhaCalcPosFixa.push(topoDaPilha)
-  return (pilhaCalcPosFixa.pop(), param2)
+  return (pilhaCalcPosFixa.pop(), variaveisNomes, variaveisValores)
 
 main()
