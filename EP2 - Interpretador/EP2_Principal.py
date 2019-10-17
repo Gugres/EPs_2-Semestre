@@ -9,7 +9,6 @@ import sys
 # d)Operadores unários: + e –
 # e)Parêntesis: ()
 # f)Atribuição: =
-# Subistituir "-" por "_" e "+" por "#" quando forem unários
 
 class Empty (Exception):
   pass
