@@ -68,7 +68,7 @@ class Pilha:
         print(p._info)
         p = p._prox
 
-def main():
+def main(expressao = ''):
   '''Função principal'''
 
   # Mensagem inicial
@@ -79,12 +79,22 @@ def main():
   # Cria duas listas para armazenar variaveis
   variaveisNomes = []
   variaveisValores = []
+
+  # Estrutura para testar esse EP com um outro arquvio .py
+  isOutsidePrincipal = False
+  if expressao != '':
+    isOutsidePrincipal = True
+
   while True:
     # Colocar o prompt
     # Solicita uma nova expressão do tipo:
-    expressao = str(input(">>> "))
+    if (expressao == ''):
+      expressao = str(input(">>> "))
+
+    # Imprimir produtor, ou sair
     if expressao == 'license':
       print ("Produzido por: Gustavo Giro Resende")
+      expressao = ''
       continue
     if expressao == 'exit()':
       return
@@ -113,15 +123,28 @@ def main():
     expressaoPosFixa = TraduzPosFixa(novaExpressao)
     if expressaoPosFixa == False:
       print ("Erro na tradução da expressão para a Pós Fixa")
+      continue
 
-    # Salva o len atual da variavel
+    # Salva o len atual da lista de variaveis
     tamanhoAtual = len(variaveisNomes)
 
     # Calcular o valor da expressão usando a notação pós-fixas
-    # Se o final for "=" atribuição, armazenar o valor. Caso contrario, print
-    resultadoFinal, variaveisNomes, variaveisValores = CalcPosFixa(expressaoPosFixa, variaveisNomes, variaveisValores)
+    # Se o final for "=" atribuição, armazenar o valor. Caso contrario, print.
+    try:
+      resultadoFinal, variaveisNomes, variaveisValores = CalcPosFixa(expressaoPosFixa, variaveisNomes, variaveisValores)
+    except:
+      print ("SyntaxError")
+      expressao = ''
+      continue
+
     if len(variaveisNomes) == tamanhoAtual:
       print(resultadoFinal)
+    expressao = ''
+
+    if isOutsidePrincipal:
+      break
+
+  return resultadoFinal
 
 # def Verificacao(param):
 #   try:
@@ -262,7 +285,7 @@ def TraduzPosFixa(param):
         if 0 <= Operadores(param[k]) <= 5:
           if 1 <= Operadores(param[k]) <= 2:
             # Caso seja + ou - unarios, converte em "+" -> "#" e "-" -> "_"
-            if (Operadores(param[k-1]) != None):
+            if k == 0 or (Operadores(param[k-1]) != None):
               if Operadores(param[k-1]) != 7:
                 param[k] = ConverteOperador(param[k])
           if pilhaPosFixa.top() != None:
@@ -309,4 +332,5 @@ def CalcPosFixa(expressaoPosFixa, variaveisNomes, variaveisValores):
       pilhaCalcPosFixa.push(topoDaPilha)
   return (pilhaCalcPosFixa.pop(), variaveisNomes, variaveisValores)
 
-main()
+if __name__ == "__main__":
+  main()
