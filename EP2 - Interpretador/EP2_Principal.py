@@ -103,40 +103,34 @@ def main(expressao = ''):
     # Transforma em uma lista
     novaExpressao = novaExpressao.split()
 
-    # Verifica a lista, para ver se a expressao esta escrita corretamente
-    # Verifica se os parentesis estão em pares e se os operadores estão entre numeros
-    # novaExpressao = Verificacao(novaExpressao)
-    # if novaExpressao == None:
-    #   continue
-
     # Verifica se alguma das variaveis ja foi calculada antes
     # Se sim, troca esse valor pela variavel na lista da novaExpressao
-    for i in range(len(novaExpressao)):
-      if novaExpressao[i] in variaveisNomes:
-        localizacao = 0
-        for k in range (len(variaveisNomes)):
-          if variaveisNomes[k] == novaExpressao[i]: localizacao = k
-        novaExpressao[i] = variaveisValores[localizacao]
-
-    # Traduzir a notação para pós-fixas
-    expressaoPosFixa = TraduzPosFixa(novaExpressao)
-    if expressaoPosFixa == False:
-      print ("Erro na tradução da expressão para a Pós Fixa")
-      continue
-
-    # Salva o len atual da lista de variaveis
-    tamanhoAtual = len(variaveisNomes)
-
-    # Calcular o valor da expressão usando a notação pós-fixas
-    # Se o final for "=" atribuição, armazenar o valor. Caso contrario, print.
+    if '=' in novaExpressao:
+      for k in range (2, len(novaExpressao)):
+        if novaExpressao[k] in variaveisNomes:
+          localizacao = 0
+          for j in range (len(variaveisNomes)):
+            if variaveisNomes[j] == novaExpressao[k]: localizacao = j
+          novaExpressao[k] = variaveisValores[localizacao]
+    if '=' not in novaExpressao:
+      for i in range(len(novaExpressao)):
+        if novaExpressao[i] in variaveisNomes:
+          localizacao = 0
+          for k in range (len(variaveisNomes)):
+            if variaveisNomes[k] == novaExpressao[i]: localizacao = k
+          novaExpressao[i] = variaveisValores[localizacao]
     try:
+      # Traduzir a notação para pós-fixas
+      expressaoPosFixa = TraduzPosFixa(novaExpressao)
+      # Calcular o valor da expressão usando a notação pós-fixas
+      # Se o final for "=" atribuição, armazenar o valor. Caso contrario, print.
       resultadoFinal, variaveisNomes, variaveisValores = CalcPosFixa(expressaoPosFixa, variaveisNomes, variaveisValores)
     except:
       print ("SyntaxError")
       expressao = ''
       continue
 
-    if len(variaveisNomes) == tamanhoAtual:
+    if '=' not in novaExpressao:
       print(resultadoFinal)
     expressao = ''
 
@@ -144,30 +138,6 @@ def main(expressao = ''):
       break
 
   return resultadoFinal
-
-# def Verificacao(param):
-#   try:
-#     # Cria uma pilha para verificar os parentesis
-#     pilhaVerificacao = Pilha()
-#     for i in range (len(param)):
-#       if param[i] == "(":
-#         pilhaVerificacao.push(param[i])
-#         continue
-#       if param[i] == ")":
-#         pilhaVerificacao.pop()
-#         continue
-#       if Operadores(param[i]) != None:
-#         if Operadores(param[i+1]) != None:
-#           if Operadores(param[i+1]) != 8 and Operadores(param[i+1]) != 9:
-#             raise ("Error")
-#     if len(pilhaVerificacao) != 0:
-#       raise ("Error")
-#     # Se a expressao esta consistente, retorna o proprio parametro
-#     return param
-#   except:
-#     print ("Expressão inconsistente nos parentesis, ou ordem de operadores incorreta")
-#     # Se inconsistente, retorna None
-#     return None
 
 def Operadores(param):
   '''Verifica qual o operador'''
@@ -273,33 +243,30 @@ def TraduzPosFixa(param):
   expressaoPosFixa = []
   # Cria uma pilha para montar a expressao Pos-Fixa
   pilhaPosFixa = Pilha()
-  try:
-    for k in range (len(param)):
-      # Se operando, adiciona na lista expressaoPosFixa
-      if Operadores(param[k]) == None: expressaoPosFixa.append(param[k])
-      # Se operador, tratamos quando é abre parentesis, operador comum, ou fecha parentesis
-      if Operadores(param[k]) != None:
-        if Operadores(param[k]) == 6:
-          pilhaPosFixa.push(param[k])
-        if 0 <= Operadores(param[k]) <= 5:
-          if 1 <= Operadores(param[k]) <= 2:
-            # Caso seja + ou - unarios, converte em "+" -> "#" e "-" -> "_"
-            if k == 0 or (Operadores(param[k-1]) != None):
-              if Operadores(param[k-1]) != 7:
-                param[k] = ConverteOperador(param[k])
-          if pilhaPosFixa.top() != None:
-            pilhaPosFixa, expressaoPosFixa = OrganizaPrioridade(param[k], pilhaPosFixa, expressaoPosFixa)
-            continue
-          pilhaPosFixa.push(param[k])
-        if Operadores(param[k]) == 7:
-          while pilhaPosFixa.top() != None and Operadores(pilhaPosFixa.top()) != 6:
-            expressaoPosFixa.append(pilhaPosFixa.pop())
-          pilhaPosFixa.pop()
-    while pilhaPosFixa.top() != None:
-      expressaoPosFixa.append(pilhaPosFixa.pop())
-    return expressaoPosFixa
-  except:
-    return False
+  for k in range (len(param)):
+    # Se operando, adiciona na lista expressaoPosFixa
+    if Operadores(param[k]) == None: expressaoPosFixa.append(param[k])
+    # Se operador, tratamos quando é abre parentesis, operador comum, ou fecha parentesis
+    if Operadores(param[k]) != None:
+      if Operadores(param[k]) == 6:
+        pilhaPosFixa.push(param[k])
+      if 0 <= Operadores(param[k]) <= 5:
+        if 1 <= Operadores(param[k]) <= 2:
+          # Caso seja + ou - unarios, converte em "+" -> "#" e "-" -> "_"
+          if k == 0 or (Operadores(param[k-1]) != None):
+            if Operadores(param[k-1]) != 7:
+              param[k] = ConverteOperador(param[k])
+        if pilhaPosFixa.top() != None:
+          pilhaPosFixa, expressaoPosFixa = OrganizaPrioridade(param[k], pilhaPosFixa, expressaoPosFixa)
+          continue
+        pilhaPosFixa.push(param[k])
+      if Operadores(param[k]) == 7:
+        while pilhaPosFixa.top() != None and Operadores(pilhaPosFixa.top()) != 6:
+          expressaoPosFixa.append(pilhaPosFixa.pop())
+        pilhaPosFixa.pop()
+  while pilhaPosFixa.top() != None:
+    expressaoPosFixa.append(pilhaPosFixa.pop())
+  return expressaoPosFixa
 
 def CalcPosFixa(expressaoPosFixa, variaveisNomes, variaveisValores):
   '''Recebe uma lista de valores contendo uma expressão em notação pós-fixa e
@@ -319,10 +286,16 @@ def CalcPosFixa(expressaoPosFixa, variaveisNomes, variaveisValores):
     if expressaoPosFixa[k] == "=" and (len(expressaoPosFixa) - 1) == k:
       elemento1 = float(pilhaCalcPosFixa.pop())
       elemento2 = pilhaCalcPosFixa.pop()
-      variaveisNomes.append(elemento2)
-      variaveisValores.append(elemento1)
-      topoDaPilha = CalculaOperadoresBinarios(expressaoPosFixa[k], elemento1, elemento2)
-      pilhaCalcPosFixa.push(topoDaPilha)
+      if elemento2 in variaveisNomes:
+        encontraPosicao = 0
+        for i in range (len(variaveisNomes)):
+          if variaveisNomes[i] == elemento2: encontraPosicao = i
+        variaveisNomes[encontraPosicao] = elemento2
+        variaveisValores[encontraPosicao] = elemento1
+      else:
+        variaveisNomes.append(elemento2)
+        variaveisValores.append(elemento1)
+      pilhaCalcPosFixa.push(elemento1)
       continue
     if Operadores(expressaoPosFixa[k]) != None:
       elemento1 = float(pilhaCalcPosFixa.pop())
