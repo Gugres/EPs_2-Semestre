@@ -64,3 +64,9 @@ def GeraArquivo(nusp, nomearq, nreg):
       cont += 1
   # fecha arquivo
   arq.close()
+
+# Entre com seu NUSP - para randomizar
+nusp = '11340571'
+# Gera arquivo com uma certa quantidade de registros
+quant_reg = 1000
+GeraArquivo(nusp, "arquivo_de_teste.txt", quant_reg)
