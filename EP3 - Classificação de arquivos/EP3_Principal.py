@@ -108,15 +108,17 @@ def main():
     else: print ("\nRespostas diferentes")
 
     # Salvar no arquivo secundário
-    for linha in TABOrdenadaNormal:
+    for linha in TABOrdenadaSort:
       linha[1], linha[2] = time.strftime("%d/%m/%Y", linha[2]), linha[1]
       arq_destino.write(','.join(linha) + '\n')
 
-def GeradorDaTabela(nome_arq):
+    arq_destino.close()
+
+def GeradorDaTabela(nome_arq_origem):
   try:
-    arq = open(nome_arq, "r")
+    arq = open(nome_arq_origem, "r")
   except:
-    return False
+    print("Erro na leitura do arquivo de origem")
   TAB = []
   for l in arq:
     linha = l[:len(l) - 1]
